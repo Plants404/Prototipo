@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Space — Panel del Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">WORK SPACE</span>
+    <span class="sub">Panel de evaluación — Board Alumni DESEM JA</span>
+  </div>
+  <div class="topbar-stats">
+    <div><b id="stat-ofertas">–</b>ofertas activas</div>
+    <div><b id="stat-candidatos">–</b>candidatos en revisión</div>
+    <div><b id="stat-seleccionados">–</b>seleccionados</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- COLUMNA 1: OFERTAS -->
+  <div class="panel offers-col">
+    <div class="panel-head"><h2>Ofertas</h2></div>
+    <div class="panel-body">
+      <input class="offer-search" id="offerSearch" placeholder="Buscar oferta o empresa…">
+      <div id="offersList"></div>
+    </div>
+  </div>
+
+  <!-- COLUMNA 2: RANKING / COMPARACIÓN -->
+  <div class="panel main-col">
+    <div class="panel-body" style="padding:0;">
+      <div class="main-head" style="padding:14px 16px 0;">
+        <div class="offer-info">
+          <h1 id="offerTitle">—</h1>
+          <p id="offerSubtitle">Seleccioná una oferta para ver el ranking de candidatos.</p>
+        </div>
+      </div>
+      <div class="filters-row">
+        <label>Match mínimo</label>
+        <input type="range" id="minMatch" min="0" max="100" value="0" step="5">
+        <span id="minMatchVal" style="font-family:var(--mono); font-weight:700;">0%</span>
+        <label style="margin-left:8px;">Estado</label>
+        <select id="stateFilter">
+          <option value="todos">Todos</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Contactado">Contactado</option>
+          <option value="Entrevista">Entrevista</option>
+          <option value="Seleccionado">Seleccionado</option>
+          <option value="Descartado">Descartado</option>
+        </select>
+        <div class="compare-bar">
+          <span id="compareCount" style="font-size:12px; color:var(--ink-soft);">0 seleccionados</span>
+          <button class="btn btn-primary" id="btnCompare" disabled>Comparar seleccionados</button>
+          <button class="btn btn-ghost" id="btnBackToRanking" style="display:none;">← Volver al ranking</button>
+        </div>
+      </div>
+      <div id="rankingBody"></div>
+      <div id="compareBody" style="display:none; overflow:auto; max-height:640px;"></div>
+    </div>
+  </div>
+
+  <!-- COLUMNA 3: DETALLE -->
+  <div class="panel detail-col" id="detailCol">
+    <div class="detail-inner" id="detailInner">
+      <div class="detail-empty">Elegí un candidato del ranking para ver el detalle del matching, el CV y las habilidades blandas certificadas.</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
