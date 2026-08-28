@@ -1,71 +1,65 @@
-/* ---------------- DATOS DE EJEMPLO ---------------- */
-const OFERTAS = [
-  {
-    id:"o1", empresa:"Empresa X", titulo:"Analista de Marketing", estado:"Aprobada",
-    modalidad:"Híbrido", jornada:"Tiempo completo", ubicacion:"Montevideo",
-    tecnicas:["Excel","Marketing digital","Google Analytics"],
-    blandas:["Comunicación","Trabajo en equipo","Pensamiento analítico"],
-    experiencia:"1–2 años en marketing o comercial", formacion:"Carrera afín a Marketing/Negocios",
-    otros:["Inglés avanzado"]
-  },
-  {
-    id:"o2", empresa:"Empresa Y", titulo:"Community Manager", estado:"Pendiente",
-    modalidad:"Remoto", jornada:"Medio tiempo", ubicacion:"Canelones",
-    tecnicas:["Diseño UX/UI","Marketing digital","Redes sociales"],
-    blandas:["Comunicación","Adaptabilidad","Argumentación"],
-    experiencia:"Sin experiencia excluyente", formacion:"Estudiante avanzado de Comunicación o Marketing",
-    otros:[]
-  },
-  {
-    id:"o3", empresa:"Empresa Z", titulo:"Analista Comercial Jr.", estado:"Aprobada",
-    modalidad:"Presencial", jornada:"Tiempo completo", ubicacion:"Montevideo",
-    tecnicas:["Excel","Ventas","Análisis de datos"],
-    blandas:["Trabajo en equipo","Liderazgo","Resolución de problemas"],
-    experiencia:"Al menos 1 año en ventas", formacion:"Carrera afín a Administración o Economía",
-    otros:["Disponibilidad para viajar"]
-  },
-];
+/* ---------------- CONEXIÓN CON GOOGLE SHEETS ---------------- */
+// Pegá acá la URL que te da Apps Script al implementar la Aplicación web
+// (Implementar → Nueva implementación → Aplicación web). Termina en /exec.
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycby2wO56D7RhCJyxeZSam72BSY6GDC0k70-nXRXi3s-T9HKvhYzZg5zN0aru8WRVtZ7P/exec";
 
-const CANDIDATOS = {
-  o1:[
-    { id:"c1", nombre:"Juan Pérez", rol:"Estudiante de Marketing", match:94, estado:"Entrevista",
-      tecnicas:["Excel","Marketing","Google Analytics"], experienciaOk:true, formacionOk:true,
-      blandas:{Comunicación:9,"Trabajo en equipo":10,"Pensamiento analítico":8,Liderazgo:7,Adaptabilidad:8},
-      faltantes:["Inglés avanzado"], cv:"#" },
-    { id:"c2", nombre:"Ana López", rol:"Lic. en Comunicación", match:89, estado:"Contactado",
-      tecnicas:["Excel","Marketing"], experienciaOk:true, formacionOk:true,
-      blandas:{Comunicación:9,"Trabajo en equipo":8,"Pensamiento analítico":7,Liderazgo:6,Adaptabilidad:9},
-      faltantes:["Google Analytics","Inglés avanzado"], cv:"#" },
-    { id:"c3", nombre:"Martín Silva", rol:"Estudiante de Negocios", match:84, estado:"Pendiente",
-      tecnicas:["Excel","Google Analytics"], experienciaOk:false, formacionOk:true,
-      blandas:{Comunicación:7,"Trabajo en equipo":9,"Pensamiento analítico":8,Liderazgo:6,Adaptabilidad:7},
-      faltantes:["Marketing digital (certificado)","Inglés avanzado"], cv:"#" },
-    { id:"c4", nombre:"Sofía Rodríguez", rol:"Estudiante de Diseño", match:79, estado:"Descartado",
-      tecnicas:["Marketing","Google Analytics"], experienciaOk:false, formacionOk:false,
-      blandas:{Comunicación:8,"Trabajo en equipo":7,"Pensamiento analítico":6,Liderazgo:5,Adaptabilidad:8},
-      faltantes:["Excel","Formación afín","Inglés avanzado"], cv:"#" },
-  ],
-  o2:[
-    { id:"c5", nombre:"Lucía Fernández", rol:"Estudiante de Comunicación", match:91, estado:"Pendiente",
-      tecnicas:["Redes sociales","Marketing digital"], experienciaOk:true, formacionOk:true,
-      blandas:{Comunicación:9,Adaptabilidad:9,Argumentación:8,"Trabajo en equipo":7,Liderazgo:6},
-      faltantes:["Diseño UX/UI"], cv:"#" },
-    { id:"c6", nombre:"Diego Ramírez", rol:"Estudiante de Diseño", match:87, estado:"Pendiente",
-      tecnicas:["Diseño UX/UI","Redes sociales"], experienciaOk:true, formacionOk:false,
-      blandas:{Comunicación:7,Adaptabilidad:8,Argumentación:6,"Trabajo en equipo":8,Liderazgo:5},
-      faltantes:["Marketing digital (certificado)"], cv:"#" },
-  ],
-  o3:[
-    { id:"c7", nombre:"Martín Silva", rol:"Estudiante de Negocios", match:88, estado:"Entrevista",
-      tecnicas:["Excel","Ventas"], experienciaOk:true, formacionOk:true,
-      blandas:{"Trabajo en equipo":9,Liderazgo:7,"Resolución de problemas":8,Comunicación:7,Adaptabilidad:7},
-      faltantes:["Análisis de datos"], cv:"#" },
-    { id:"c8", nombre:"Camila Torres", rol:"Lic. en Economía", match:82, estado:"Seleccionado",
-      tecnicas:["Excel","Análisis de datos"], experienciaOk:true, formacionOk:true,
-      blandas:{"Trabajo en equipo":8,Liderazgo:6,"Resolución de problemas":9,Comunicación:8,Adaptabilidad:6},
-      faltantes:["Ventas (certificado)","Disponibilidad para viajar"], cv:"#" },
-  ],
-};
+let OFERTAS = [];
+let CANDIDATOS = {};
+let datosListos = false;
+
+async function cargarDatos(){
+  mostrarEstadoCarga("Conectando con la planilla…");
+  try{
+    const resp = await fetch(WEBAPP_URL + (WEBAPP_URL.includes("?") ? "&" : "?") + "t=" + Date.now());
+    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    const datos = await resp.json();
+    OFERTAS = datos.ofertas || [];
+    CANDIDATOS = datos.candidatos || {};
+    datosListos = true;
+    renderOffers();
+    updateTopStats();
+    if(OFERTAS.length){
+      selectOffer(OFERTAS[0].id);
+    } else {
+      mostrarEstadoCarga("Todavía no hay ofertas cargadas en la planilla.");
+    }
+  }catch(err){
+    console.error("Error cargando datos de la planilla:", err);
+    mostrarEstadoError();
+  }
+}
+
+function mostrarEstadoCarga(mensaje){
+  document.getElementById("rankingBody").innerHTML =
+    `<div class="empty-state">${mensaje}</div>`;
+}
+
+function mostrarEstadoError(){
+  document.getElementById("rankingBody").innerHTML = `
+    <div class="empty-state">
+      <div class="big">No se pudo conectar con la planilla</div>
+      Revisá que WEBAPP_URL en script.js sea la URL correcta de tu Aplicación web
+      (Apps Script → Implementar → Administrar implementaciones) y que el acceso
+      esté configurado como "Cualquier usuario".
+      <div style="margin-top:14px;">
+        <button class="btn btn-primary" onclick="cargarDatos()">Reintentar</button>
+      </div>
+    </div>`;
+}
+
+/** Avisa a la planilla que cambió el estado de un candidato (sin bloquear la UI). */
+async function guardarEstadoEnPlanilla(matchId, estado){
+  if(!matchId) return;
+  try{
+    await fetch(WEBAPP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita el preflight de CORS
+      body: JSON.stringify({ action:"actualizarEstado", matchId, estado }),
+    });
+  }catch(err){
+    console.error("No se pudo guardar el estado en la planilla:", err);
+  }
+}
 
 /* ---------------- ESTADO ---------------- */
 let activeOfferId = null;
@@ -84,11 +78,11 @@ function renderOffers(filterText=""){
       div.className = "offer-card" + (o.id===activeOfferId ? " active":"");
       div.innerHTML = `
         <p class="offer-title">${o.titulo}</p>
-        <p class="offer-company">${o.empresa} · ${o.ubicacion}</p>
+        <p class="offer-company">${o.empresa} · ${o.ubicacion || "sin ubicación"}</p>
         <div class="offer-meta">
           <span class="tag status-${o.estado==='Aprobada'?'aprobada':'pendiente'}">${o.estado}</span>
-          <span class="tag">${o.modalidad}</span>
-          <span class="tag">${o.jornada}</span>
+          ${o.modalidad ? `<span class="tag">${o.modalidad}</span>` : ""}
+          ${o.jornada ? `<span class="tag">${o.jornada}</span>` : ""}
         </div>
         <div class="offer-count">${n} candidatos rankeados</div>
       `;
@@ -111,7 +105,7 @@ function selectOffer(id){
 
 /* ---------------- RENDER: RANKING ---------------- */
 function initials(name){
-  return name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+  return (name||"?").split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
 }
 
 function renderRanking(){
@@ -124,7 +118,8 @@ function renderRanking(){
     return;
   }
   document.getElementById("offerTitle").textContent = offer.titulo;
-  document.getElementById("offerSubtitle").textContent = `${offer.empresa} · ${offer.ubicacion} · ${offer.modalidad} · ${offer.jornada}`;
+  document.getElementById("offerSubtitle").textContent =
+    [offer.empresa, offer.ubicacion, offer.modalidad, offer.jornada].filter(Boolean).join(" · ");
 
   const minMatch = parseInt(document.getElementById("minMatch").value,10);
   const stateFilter = document.getElementById("stateFilter").value;
@@ -146,7 +141,7 @@ function renderRanking(){
       <div class="avatar">${initials(c.nombre)}</div>
       <div>
         <p class="cand-name">#${i+1} ${c.nombre}</p>
-        <p class="cand-role">${c.rol}</p>
+        <p class="cand-role">${c.rol||""}</p>
       </div>
       <div class="cand-tags">${c.tecnicas.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join("")}</div>
       <div class="match-wrap">
@@ -157,7 +152,6 @@ function renderRanking(){
       </select>
       <span style="text-align:center; color:var(--ink-soft);">›</span>
     `;
-    row.querySelector(".avatar").parentElement.parentElement; // noop
     row.addEventListener("click",(e)=>{
       if(e.target.classList.contains("cmp-check")||e.target.classList.contains("status-select")) return;
       openCandidateId = c.id;
@@ -171,6 +165,7 @@ function renderRanking(){
     row.querySelector(".status-select").addEventListener("change",(e)=>{
       c.estado = e.target.value;
       updateTopStats();
+      guardarEstadoEnPlanilla(c.matchId, c.estado);
     });
     body.appendChild(row);
   });
@@ -186,6 +181,9 @@ function updateCompareBar(){
 /* ---------------- RADAR (SVG puro) ---------------- */
 function renderRadar(dataObj, size=190){
   const keys = Object.keys(dataObj);
+  if(keys.length < 3){
+    return `<p style="font-size:12px; color:var(--ink-soft); text-align:center;">Todavía no hay suficientes habilidades blandas evaluadas para este Alumni.</p>`;
+  }
   const n = keys.length;
   const cx = size/2, cy = size/2, R = size/2 - 34;
   const angle = (i)=> (Math.PI*2*i/n) - Math.PI/2;
@@ -237,7 +235,7 @@ function renderDetail(c, offer){
       <div class="avatar">${initials(c.nombre)}</div>
       <div>
         <h3>${c.nombre}</h3>
-        <p>${c.rol}</p>
+        <p>${c.rol||""}</p>
       </div>
       <div class="score-ring">
         <span class="num">${c.match}%</span>
@@ -248,6 +246,7 @@ function renderDetail(c, offer){
     <div class="block-title">Habilidades técnicas</div>
     ${tecOk.map(t=>`<div class="match-line"><span><span class="dot ok"></span>${t}</span><span>Coincide</span></div>`).join("")}
     ${tecFalt.map(t=>`<div class="match-line"><span><span class="dot bad"></span>${t}</span><span>No informado</span></div>`).join("")}
+    ${(!tecOk.length && !tecFalt.length) ? `<p style="font-size:12.5px; color:var(--ink-soft);">Esta oferta no tiene habilidades técnicas cargadas todavía.</p>` : ""}
 
     <div class="block-title">Experiencia y formación</div>
     <div class="match-line"><span><span class="dot ${c.experienciaOk?'ok':'bad'}"></span>Experiencia requerida</span><span>${c.experienciaOk?'Coincide':'No coincide'}</span></div>
@@ -261,7 +260,7 @@ function renderDetail(c, offer){
     <div class="missing-box">${c.faltantes.join(" · ")}</div>` : ""}
 
     <div class="block-title">CV y contacto</div>
-    <a class="cv-link" href="${c.cv}" onclick="return false;">📄 Ver currículum adjunto</a>
+    ${c.cv ? `<a class="cv-link" href="${c.cv}" target="_blank">📄 Ver currículum adjunto</a>` : `<p style="font-size:12.5px; color:var(--ink-soft);">Este Alumni todavía no cargó un CV.</p>`}
 
     <div class="decision-row">
       <button class="btn btn-green" onclick="setStatus('${c.id}','Seleccionado')">Seleccionar</button>
@@ -274,7 +273,13 @@ function renderDetail(c, offer){
 function setStatus(cid, estado){
   const offer = OFERTAS.find(o=>o.id===activeOfferId);
   const cand = (CANDIDATOS[offer.id]||[]).find(c=>c.id===cid);
-  if(cand){ cand.estado = estado; renderRanking(); renderDetail(cand, offer); updateTopStats(); }
+  if(cand){
+    cand.estado = estado;
+    renderRanking();
+    renderDetail(cand, offer);
+    updateTopStats();
+    guardarEstadoEnPlanilla(cand.matchId, estado);
+  }
 }
 
 /* ---------------- COMPARACIÓN ---------------- */
@@ -303,7 +308,7 @@ function renderCompare(cands, offer){
   html += `</tr></thead><tbody>`;
 
   html += `<tr><td class="row-label">Match total</td>${cands.map(c=>`<td class="compare-score">${c.match}%</td>`).join("")}</tr>`;
-  html += `<tr><td class="row-label">Habilidades técnicas</td>${cands.map(c=>`<td>${c.tecnicas.join(", ")}</td>`).join("")}</tr>`;
+  html += `<tr><td class="row-label">Habilidades técnicas</td>${cands.map(c=>`<td>${c.tecnicas.join(", ")||"—"}</td>`).join("")}</tr>`;
   html += `<tr><td class="row-label">Experiencia requerida</td>${cands.map(c=>`<td>${c.experienciaOk?"✅ Coincide":"❌ No coincide"}</td>`).join("")}</tr>`;
   html += `<tr><td class="row-label">Formación requerida</td>${cands.map(c=>`<td>${c.formacionOk?"✅ Coincide":"❌ No coincide"}</td>`).join("")}</tr>`;
   allBlandas.forEach(k=>{
@@ -347,6 +352,4 @@ document.getElementById("minMatch").addEventListener("input", (e)=>{
 document.getElementById("stateFilter").addEventListener("change", renderRanking);
 
 /* ---------------- INIT ---------------- */
-renderOffers();
-updateTopStats();
-selectOffer("o1");
+cargarDatos();
