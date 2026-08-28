@@ -1,10 +1,12 @@
 /* ---------------- CONEXIÓN CON GOOGLE SHEETS ---------------- */
 // Pegá acá la URL que te da Apps Script al implementar la Aplicación web
 // (Implementar → Nueva implementación → Aplicación web). Termina en /exec.
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycby2wO56D7RhCJyxeZSam72BSY6GDC0k70-nXRXi3s-T9HKvhYzZg5zN0aru8WRVtZ7P/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzQKCW67DKQ-iKO8_bM3zkdWEOihW1ZSgSVP03a7Ogg0F_Jq9WOmoxM10iS_J6yZc-amw/exec";
 
 let OFERTAS = [];
 let CANDIDATOS = {};
+let CATALOGO_OFERTAS = [];
+let CATALOGO_ALUMNI = [];
 let datosListos = false;
 
 async function cargarDatos(){
@@ -15,6 +17,8 @@ async function cargarDatos(){
     const datos = await resp.json();
     OFERTAS = datos.ofertas || [];
     CANDIDATOS = datos.candidatos || {};
+    CATALOGO_OFERTAS = datos.catalogoOfertas || [];
+    CATALOGO_ALUMNI = datos.catalogoAlumni || [];
     datosListos = true;
     renderOffers();
     updateTopStats();
@@ -23,6 +27,8 @@ async function cargarDatos(){
     } else {
       mostrarEstadoCarga("Todavía no hay ofertas cargadas en la planilla.");
     }
+    renderCatalogoOfertas();
+    renderCatalogoAlumni();
   }catch(err){
     console.error("Error cargando datos de la planilla:", err);
     mostrarEstadoError();
@@ -353,3 +359,207 @@ document.getElementById("stateFilter").addEventListener("change", renderRanking)
 
 /* ---------------- INIT ---------------- */
 cargarDatos();
+
+/* ============================================================
+   PESTAÑAS (Matching / Ofertas / Alumni)
+   ============================================================ */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const tab = btn.dataset.tab;
+    document.getElementById("view-matching").style.display = tab==="matching" ? "grid" : "none";
+    document.getElementById("view-ofertas").style.display = tab==="ofertas" ? "grid" : "none";
+    document.getElementById("view-alumni").style.display = tab==="alumni" ? "grid" : "none";
+  });
+});
+
+/* ============================================================
+   SECCIÓN: TODAS LAS OFERTAS (catálogo + perfil de empresa)
+   ============================================================ */
+let activeOfertaCatId = null;
+
+function renderCatalogoOfertas(){
+  const texto = (document.getElementById("ofertaCatSearch").value || "").toLowerCase();
+  const estadoFiltro = document.getElementById("ofertaCatEstado").value;
+  const list = document.getElementById("ofertaCatList");
+  list.innerHTML = "";
+
+  const filtradas = CATALOGO_OFERTAS.filter(o=>{
+    const coincideTexto = (o.titulo+" "+o.empresa).toLowerCase().includes(texto);
+    const coincideEstado = estadoFiltro==="todos" || o.estado===estadoFiltro;
+    return coincideTexto && coincideEstado;
+  });
+
+  if(filtradas.length===0){
+    list.innerHTML = `<div class="empty-state">No hay ofertas que coincidan con la búsqueda.</div>`;
+    return;
+  }
+
+  filtradas.forEach(o=>{
+    const div = document.createElement("div");
+    div.className = "cat-card" + (o.id===activeOfertaCatId ? " active" : "");
+    div.innerHTML = `
+      <p class="cat-card-title">${o.titulo}</p>
+      <p class="cat-card-sub">${o.empresa} · ${o.ubicacion || "sin ubicación"}</p>
+      <div class="offer-meta" style="margin-top:6px;">
+        <span class="tag status-${o.estado==='Aprobada'?'aprobada':'pendiente'}">${o.estado}</span>
+        ${o.modalidad ? `<span class="tag">${o.modalidad}</span>` : ""}
+      </div>
+    `;
+    div.onclick = ()=>{
+      activeOfertaCatId = o.id;
+      renderCatalogoOfertas();
+      renderOfertaCatDetail(o);
+    };
+    list.appendChild(div);
+  });
+}
+
+function renderOfertaCatDetail(o){
+  const el = document.getElementById("ofertaCatDetailInner");
+  const emp = o.empresaInfo;
+
+  el.innerHTML = `
+    <div class="profile-header">
+      <div class="avatar">${initials(o.empresa)}</div>
+      <div>
+        <h2>${o.titulo}</h2>
+        <p>${o.empresa} ${o.ubicacion ? "· "+o.ubicacion : ""}</p>
+      </div>
+    </div>
+
+    <div class="offer-meta" style="margin-bottom:16px;">
+      <span class="tag status-${o.estado==='Aprobada'?'aprobada':'pendiente'}">${o.estado}</span>
+      ${o.modalidad ? `<span class="tag">${o.modalidad}</span>` : ""}
+      ${o.jornada ? `<span class="tag">${o.jornada}</span>` : ""}
+    </div>
+
+    <div class="block-title">Descripción del puesto</div>
+    <div class="desc-box">${o.descripcion || "Sin descripción cargada."}</div>
+
+    <div class="block-title">Requisitos</div>
+    <div class="field-grid">
+      <div class="field-item"><span class="field-label">Habilidades técnicas</span><span class="field-value">${o.tecnicas.join(", ")||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Habilidades blandas</span><span class="field-value">${o.blandas.join(", ")||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Experiencia requerida</span><span class="field-value">${o.experiencia||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Formación requerida</span><span class="field-value">${o.formacion||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Otros requisitos</span><span class="field-value">${o.otros.join(", ")||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Fecha de publicación</span><span class="field-value">${o.fechaPublicacion||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Fecha de cierre</span><span class="field-value">${o.fechaCierre||"—"}</span></div>
+    </div>
+
+    <div class="block-title">Perfil de la empresa</div>
+    ${emp ? `
+    <div class="field-grid">
+      <div class="field-item"><span class="field-label">Nombre</span><span class="field-value">${emp.nombre||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Sector</span><span class="field-value">${emp.sector||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Tamaño</span><span class="field-value">${emp.tamano||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Departamento</span><span class="field-value">${emp.departamento||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Persona de contacto</span><span class="field-value">${emp.contacto||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Email</span><span class="field-value">${emp.email ? `<a href="mailto:${emp.email}">${emp.email}</a>` : "—"}</span></div>
+      <div class="field-item"><span class="field-label">Teléfono</span><span class="field-value">${emp.telefono||"—"}</span></div>
+    </div>` : `<p style="font-size:12.5px; color:var(--ink-soft);">No hay datos de empresa cargados para esta oferta.</p>`}
+  `;
+}
+
+document.getElementById("ofertaCatSearch").addEventListener("input", renderCatalogoOfertas);
+document.getElementById("ofertaCatEstado").addEventListener("change", renderCatalogoOfertas);
+
+/* ============================================================
+   SECCIÓN: TODOS LOS ALUMNI (catálogo + perfil individual)
+   ============================================================ */
+let activeAlumniCatId = null;
+
+function renderCatalogoAlumni(){
+  const texto = (document.getElementById("alumniCatSearch").value || "").toLowerCase();
+  const list = document.getElementById("alumniCatList");
+  list.innerHTML = "";
+
+  const filtrados = CATALOGO_ALUMNI.filter(a=>{
+    const bolsa = (a.nombre+" "+a.carrera+" "+a.tecnicas.join(" ")).toLowerCase();
+    return bolsa.includes(texto);
+  });
+
+  if(filtrados.length===0){
+    list.innerHTML = `<div class="empty-state">No hay Alumni que coincidan con la búsqueda.</div>`;
+    return;
+  }
+
+  filtrados.forEach(a=>{
+    const div = document.createElement("div");
+    div.className = "cat-card" + (a.id===activeAlumniCatId ? " active" : "");
+    div.innerHTML = `
+      <div class="cat-card-top">
+        <div class="avatar" style="width:32px;height:32px;font-size:11px;">${initials(a.nombre)}</div>
+        <div>
+          <p class="cat-card-title">${a.nombre}</p>
+          <p class="cat-card-sub">${a.carrera||"Carrera no informada"}</p>
+        </div>
+      </div>
+      <div class="cand-tags">${a.tecnicas.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    `;
+    div.onclick = ()=>{
+      activeAlumniCatId = a.id;
+      renderCatalogoAlumni();
+      renderAlumniCatDetail(a);
+    };
+    list.appendChild(div);
+  });
+}
+
+function renderAlumniCatDetail(a){
+  const el = document.getElementById("alumniCatDetailInner");
+
+  el.innerHTML = `
+    <div class="profile-header">
+      <div class="avatar">${initials(a.nombre)}</div>
+      <div>
+        <h2>${a.nombre}</h2>
+        <p>${a.carrera||"Carrera no informada"} ${a.institucion?"· "+a.institucion:""}</p>
+      </div>
+    </div>
+
+    <div class="block-title">Datos de contacto</div>
+    <div class="field-grid">
+      <div class="field-item"><span class="field-label">Email</span><span class="field-value">${a.email ? `<a href="mailto:${a.email}">${a.email}</a>` : "—"}</span></div>
+      <div class="field-item"><span class="field-label">Teléfono</span><span class="field-value">${a.telefono||"—"}</span></div>
+      <div class="field-item"><span class="field-label">LinkedIn</span><span class="field-value">${a.linkedin ? `<a href="https://${a.linkedin.replace(/^https?:\/\//,'')}" target="_blank">Ver perfil</a>` : "—"}</span></div>
+      <div class="field-item"><span class="field-label">Departamento</span><span class="field-value">${a.departamento||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Rango etario</span><span class="field-value">${a.rangoEtario||"—"}</span></div>
+    </div>
+
+    <div class="block-title">DESEM</div>
+    <div class="field-grid">
+      <div class="field-item"><span class="field-label">Programa realizado</span><span class="field-value">${a.programa||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Año / período</span><span class="field-value">${a.anioParticipacion||"—"}</span></div>
+    </div>
+
+    <div class="block-title">Formación</div>
+    <div class="field-grid">
+      <div class="field-item"><span class="field-label">Carrera</span><span class="field-value">${a.carrera||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Institución</span><span class="field-value">${a.institucion||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Estado de la carrera</span><span class="field-value">${a.estadoCarrera||"—"}</span></div>
+    </div>
+
+    <div class="block-title">Habilidades técnicas</div>
+    <div class="cand-tags" style="margin-bottom:6px;">${a.tecnicas.length ? a.tecnicas.map(t=>`<span class="tag">${t}</span>`).join("") : "<span style='font-size:12.5px;color:var(--ink-soft);'>No informadas</span>"}</div>
+
+    <div class="block-title">Disponibilidad</div>
+    <div class="field-grid">
+      <div class="field-item"><span class="field-label">Disponibilidad laboral</span><span class="field-value">${a.disponibilidad||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Modalidad preferida</span><span class="field-value">${a.modalidad||"—"}</span></div>
+    </div>
+
+    <div class="block-title">Experiencia</div>
+    <div class="desc-box">${a.experiencia || "Sin experiencia informada."}</div>
+
+    <div class="block-title">Habilidades blandas certificadas (DESEM)</div>
+    <div class="radar-wrap">${renderRadar(a.blandas)}</div>
+
+    <div class="block-title">CV</div>
+    ${a.cv ? `<a class="cv-link" href="${a.cv}" target="_blank">📄 Ver currículum adjunto</a>` : `<p style="font-size:12.5px; color:var(--ink-soft);">Este Alumni todavía no cargó un CV.</p>`}
+  `;
+}
+
+document.getElementById("alumniCatSearch").addEventListener("input", renderCatalogoAlumni);

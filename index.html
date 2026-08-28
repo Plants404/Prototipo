@@ -13,7 +13,7 @@
 <div class="topbar">
   <div class="brand">
     <span class="mark">WORK SPACE</span>
-    <span class="sub">Panel de evaluación — Board Alumni DESEM JA</span>
+    <span class="sub">Panel del Board — DESEM JA</span>
   </div>
   <div class="topbar-stats">
     <div><b id="stat-ofertas">–</b>ofertas activas</div>
@@ -22,9 +22,15 @@
   </div>
 </div>
 
-<div class="layout">
+<div class="tabbar">
+  <button class="tab-btn active" data-tab="matching">Matching y evaluación</button>
+  <button class="tab-btn" data-tab="ofertas">Todas las ofertas</button>
+  <button class="tab-btn" data-tab="alumni">Todos los Alumni</button>
+</div>
 
-  <!-- COLUMNA 1: OFERTAS -->
+<!-- ======================= VISTA: MATCHING ======================= -->
+<div class="layout" id="view-matching">
+
   <div class="panel offers-col">
     <div class="panel-head"><h2>Ofertas</h2></div>
     <div class="panel-body">
@@ -33,7 +39,6 @@
     </div>
   </div>
 
-  <!-- COLUMNA 2: RANKING / COMPARACIÓN -->
   <div class="panel main-col">
     <div class="panel-body" style="padding:0;">
       <div class="main-head" style="padding:14px 16px 0;">
@@ -66,10 +71,54 @@
     </div>
   </div>
 
-  <!-- COLUMNA 3: DETALLE -->
   <div class="panel detail-col" id="detailCol">
     <div class="detail-inner" id="detailInner">
       <div class="detail-empty">Elegí un candidato del ranking para ver el detalle del matching, el CV y las habilidades blandas certificadas.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ======================= VISTA: TODAS LAS OFERTAS ======================= -->
+<div class="layout layout-2col" id="view-ofertas" style="display:none;">
+
+  <div class="panel offers-col">
+    <div class="panel-head"><h2>Ofertas (todas)</h2></div>
+    <div class="panel-body">
+      <input class="offer-search" id="ofertaCatSearch" placeholder="Buscar por título o empresa…">
+      <select id="ofertaCatEstado" style="width:100%; margin-bottom:10px; padding:8px; border:1px solid var(--line); border-radius:8px; font-family:var(--body); font-size:12.5px;">
+        <option value="todos">Todos los estados</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="Aprobada">Aprobada</option>
+        <option value="Rechazada / Requiere ajustes">Rechazada / Requiere ajustes</option>
+        <option value="Cerrada">Cerrada</option>
+      </select>
+      <div id="ofertaCatList"></div>
+    </div>
+  </div>
+
+  <div class="panel detail-col-static" id="ofertaCatDetailCol">
+    <div class="detail-inner" id="ofertaCatDetailInner">
+      <div class="detail-empty">Elegí una oferta de la lista para ver el detalle completo y el perfil de la empresa.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ======================= VISTA: TODOS LOS ALUMNI ======================= -->
+<div class="layout layout-2col" id="view-alumni" style="display:none;">
+
+  <div class="panel offers-col">
+    <div class="panel-head"><h2>Alumni (todos)</h2></div>
+    <div class="panel-body">
+      <input class="offer-search" id="alumniCatSearch" placeholder="Buscar por nombre, carrera o habilidad…">
+      <div id="alumniCatList"></div>
+    </div>
+  </div>
+
+  <div class="panel detail-col-static" id="alumniCatDetailCol">
+    <div class="detail-inner" id="alumniCatDetailInner">
+      <div class="detail-empty">Elegí un Alumni de la lista para ver su perfil completo.</div>
     </div>
   </div>
 
