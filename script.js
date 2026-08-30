@@ -1,7 +1,7 @@
 /* ---------------- CONEXIÓN CON GOOGLE SHEETS ---------------- */
 // Pegá acá la URL que te da Apps Script al implementar la Aplicación web
 // (Implementar → Nueva implementación → Aplicación web). Termina en /exec.
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzQKCW67DKQ-iKO8_bM3zkdWEOihW1ZSgSVP03a7Ogg0F_Jq9WOmoxM10iS_J6yZc-amw/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwiX4yPmFhBqO33G_mmW7VQr6kMgnm4zHQsN-sIm_MFaXNrCB0OnIOnx3IWNYCmMSNrrw/exec";
 
 let OFERTAS = [];
 let CANDIDATOS = {};
