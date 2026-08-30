@@ -1,7 +1,7 @@
 /* ---------------- CONEXIÓN CON GOOGLE SHEETS ---------------- */
 // Pegá acá la URL que te da Apps Script al implementar la Aplicación web
 // (Implementar → Nueva implementación → Aplicación web). Termina en /exec.
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwiX4yPmFhBqO33G_mmW7VQr6kMgnm4zHQsN-sIm_MFaXNrCB0OnIOnx3IWNYCmMSNrrw/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxh3eZw_DInJZg4X9RopOBWNYobuXczLVGlJWmmMhGgACxWls3DRf5XyDLd7IV7FnF7fQ/exec";
 
 let OFERTAS = [];
 let CANDIDATOS = {};
@@ -526,7 +526,7 @@ function renderAlumniCatDetail(a){
       <div class="field-item"><span class="field-label">Teléfono</span><span class="field-value">${a.telefono||"—"}</span></div>
       <div class="field-item"><span class="field-label">LinkedIn</span><span class="field-value">${a.linkedin ? `<a href="https://${a.linkedin.replace(/^https?:\/\//,'')}" target="_blank">Ver perfil</a>` : "—"}</span></div>
       <div class="field-item"><span class="field-label">Departamento</span><span class="field-value">${a.departamento||"—"}</span></div>
-      <div class="field-item"><span class="field-label">Rango etario</span><span class="field-value">${a.rangoEtario||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Edad</span><span class="field-value">${(a.edad!==null && a.edad!==undefined) ? a.edad+" años" : "—"}</span></div>
     </div>
 
     <div class="block-title">DESEM</div>
