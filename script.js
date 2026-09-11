@@ -1,7 +1,7 @@
 /* ---------------- CONEXIÓN CON GOOGLE SHEETS ---------------- */
 // Pegá acá la URL que te da Apps Script al implementar la Aplicación web
 // (Implementar → Nueva implementación → Aplicación web). Termina en /exec.
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxh3eZw_DInJZg4X9RopOBWNYobuXczLVGlJWmmMhGgACxWls3DRf5XyDLd7IV7FnF7fQ/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwDhuovTaeME4t3MyFsi-cJeSHZ__xxjrG8FmkXUz0nl3akiUxbhoOjQcsmDzAt3k35qw/exec";
 
 let OFERTAS = [];
 let CANDIDATOS = {};
@@ -200,27 +200,28 @@ function renderRadar(dataObj, size=190){
   let rings = "";
   [2,4,6,8,10].forEach(v=>{
     const pts = keys.map((k,i)=>pt(i,v).join(",")).join(" ");
-    rings += `<polygon points="${pts}" fill="none" stroke="#DCE3DF" stroke-width="1"/>`;
+    rings += `<polygon points="${pts}" fill="none" stroke="#dfe6e9" stroke-width="1"/>`;
   });
   let axes = "";
   keys.forEach((k,i)=>{
     const [x,y] = pt(i,10);
-    axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#DCE3DF" stroke-width="1"/>`;
+    axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#dfe6e9" stroke-width="1"/>`;
   });
+
   const dataPts = keys.map((k,i)=>pt(i,dataObj[k]).join(",")).join(" ");
   let labels = "";
   keys.forEach((k,i)=>{
     const [x,y] = pt(i,12.6);
-    labels += `<text x="${x}" y="${y}" font-size="9.5" font-family="Inter" fill="#5B6863" text-anchor="middle" dominant-baseline="middle">${k}</text>`;
+    labels += `<text x="${x}" y="${y}" font-size="9.5" font-family="Poppins" fill="#7b8a97" text-anchor="middle" dominant-baseline="middle">${k}</text>`;
   });
   let dots = "";
   keys.forEach((k,i)=>{
     const [x,y] = pt(i,dataObj[k]);
-    dots += `<circle cx="${x}" cy="${y}" r="3" fill="#123832"/>`;
+    dots += `<circle class="radar-dot" cx="${x}" cy="${y}" r="3" fill="#163E63" style="transform-origin:${x}px ${y}px; animation-delay:${(i*0.18).toFixed(2)}s;"/>`;
   });
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="overflow:visible;">
     ${rings}${axes}
-    <polygon points="${dataPts}" fill="#1E5B52" fill-opacity="0.35" stroke="#123832" stroke-width="1.5"/>
+    <polygon class="radar-fill" points="${dataPts}" fill="#71B52B" stroke="#163E63" stroke-width="1.5"/>
     ${dots}${labels}
   </svg>`;
 }
@@ -533,6 +534,7 @@ function renderAlumniCatDetail(a){
     <div class="field-grid">
       <div class="field-item"><span class="field-label">Programa realizado</span><span class="field-value">${a.programa||"—"}</span></div>
       <div class="field-item"><span class="field-label">Año / período</span><span class="field-value">${a.anioParticipacion||"—"}</span></div>
+      <div class="field-item"><span class="field-label">Otros programas DESEM</span><span class="field-value">${a.otrosProgramas||"—"}</span></div>
     </div>
 
     <div class="block-title">Formación</div>
@@ -540,6 +542,10 @@ function renderAlumniCatDetail(a){
       <div class="field-item"><span class="field-label">Carrera</span><span class="field-value">${a.carrera||"—"}</span></div>
       <div class="field-item"><span class="field-label">Institución</span><span class="field-value">${a.institucion||"—"}</span></div>
       <div class="field-item"><span class="field-label">Estado de la carrera</span><span class="field-value">${a.estadoCarrera||"—"}</span></div>
+    </div>
+    <div class="desc-box" style="margin-top:0;">
+      <span class="field-label" style="display:block; margin-bottom:4px;">Cursos, talleres y certificaciones</span>
+      ${a.cursos || "No informado."}
     </div>
 
     <div class="block-title">Habilidades técnicas</div>

@@ -472,3 +472,15 @@
     font-size:13px; line-height:1.6; background:#f4f7f9; border:1px solid var(--line);
     border-radius:12px; padding:14px 16px; margin:6px 0 8px;
   }
+
+/* ---------- Animación del gráfico radial (relleno "respirando") ---------- */
+.radar-fill{
+  animation: palpitar 1.5s ease-in-out infinite;
+}
+@keyframes palpitar{
+  0%, 100%{ fill-opacity: 0.18; }
+  50%{ fill-opacity: 0.42; }
+}
+.radar-dot{
+  transform-box: fill-box;
+}
