@@ -11,6 +11,38 @@
 </head>
 <body>
 
+<!-- ======================= PANTALLA DE ACCESO ======================= -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="auth-brand">
+      <span class="brand mark">WORK SPACE</span>
+      <span class="brand sub">Panel del Board — DESEM JA</span>
+    </div>
+    <h1 id="authTitle">Acceso al panel</h1>
+    <p class="auth-hint">Ingresá con tus credenciales de administración.</p>
+
+    <form id="loginForm" novalidate>
+      <label for="loginUser">Usuario</label>
+      <input id="loginUser" name="usuario" type="text" autocomplete="username" placeholder="Ej.: boardalumni" required>
+
+      <label for="loginPass">Contraseña</label>
+      <div class="password-wrap">
+        <input id="loginPass" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+        <button type="button" class="toggle-pass" id="togglePass" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>
+      </div>
+
+      <p class="auth-error" id="authError" role="alert" hidden></p>
+
+      <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Ingresar</button>
+    </form>
+
+    <p class="auth-foot">Los datos se cargan desde Google Sheets al iniciar sesión.</p>
+  </div>
+</div>
+
+<!-- ======================= APLICACIÓN ======================= -->
+<div class="app" id="app">
+
 <div class="topbar">
   <div class="brand">
     <span class="mark">WORK SPACE</span>
@@ -21,16 +53,45 @@
     <div><b id="stat-candidatos">–</b>candidatos en revisión</div>
     <div><b id="stat-seleccionados">–</b>seleccionados</div>
   </div>
+  <div class="topbar-user">
+    <span id="topbarUser">–</span>
+    <button class="btn btn-logout" id="btnLogout">Cerrar sesión</button>
+  </div>
 </div>
 
-<div class="tabbar">
-  <button class="tab-btn active" data-tab="matching">Matching y evaluación</button>
-  <button class="tab-btn" data-tab="ofertas">Todas las ofertas</button>
-  <button class="tab-btn" data-tab="alumni">Todos los Alumni</button>
+<div class="tabbar" role="tablist">
+  <button class="tab-btn active" data-tab="home" type="button">Inicio</button>
+  <button class="tab-btn" data-tab="matching" type="button">Matching y evaluación</button>
+  <button class="tab-btn" data-tab="ofertas" type="button">Todas las ofertas</button>
+  <button class="tab-btn" data-tab="alumni" type="button">Todos los Alumni</button>
+</div>
+
+<!-- ======================= VISTA: INICIO ======================= -->
+<div class="layout" id="view-home" style="display:grid;">
+
+  <div class="panel home-panel">
+    <div class="panel-head"><h2>Inicio</h2></div>
+    <div class="panel-body">
+      <div class="home-welcome">
+        <h3 id="homeGreeting">Bienvenido/a</h3>
+        <p>Resumen del estado actual del seguimiento de ofertas y Alumni.</p>
+      </div>
+
+      <div id="homeStats" class="stat-grid"><!-- render dinámico --></div>
+
+      <div class="block-title">Accesos rápidos</div>
+      <div class="home-actions">
+        <button class="home-link" data-tab="matching" type="button">Matching y evaluación<span>Ranking de candidatos por oferta</span></button>
+        <button class="home-link" data-tab="ofertas" type="button">Todas las ofertas<span>Catálogo y perfil de empresas</span></button>
+        <button class="home-link" data-tab="alumni" type="button">Todos los Alumni<span>Perfiles completos de egresados</span></button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ======================= VISTA: MATCHING ======================= -->
-<div class="layout" id="view-matching">
+<div class="layout" id="view-matching" style="display:none;">
 
   <div class="panel offers-col">
     <div class="panel-head"><h2>Ofertas</h2></div>
@@ -51,7 +112,7 @@
       <div class="filters-row">
         <label>Match mínimo</label>
         <input type="range" id="minMatch" min="0" max="100" value="0" step="5">
-        <span id="minMatchVal" style="font-family:var(--mono); font-weight:700;">0%</span>
+        <span id="minMatchVal" style="font-family:var(--body); font-weight:700;">0%</span>
         <label style="margin-left:8px;">Estado</label>
         <select id="stateFilter">
           <option value="todos">Todos</option>
@@ -124,6 +185,8 @@
   </div>
 
 </div>
+
+</div><!-- /.app -->
 
 <script src="script.js"></script>
 </body>
